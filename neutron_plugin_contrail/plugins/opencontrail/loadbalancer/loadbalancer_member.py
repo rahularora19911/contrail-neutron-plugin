@@ -41,6 +41,14 @@ class LoadbalancerMemberManager(ResourceManager):
         'weight': 'weight',
         'address': 'address',
     }
+   
+    _loadbalancer_pool_type_mapping = {
+        'admin_state': 'admin_state_up',
+        'protocol': 'protocol',
+        'loadbalancer_method': 'lb_method',
+        'subnet_id': 'subnet_id'
+    }
+
 
     @property
     def property_type_mapping(self):
@@ -92,6 +100,13 @@ class LoadbalancerMemberManager(ResourceManager):
         except NoIdError:
             pass
 
+        props = pool.get_loadbalancer_pool_properties()
+        for key, mapping in self._loadbalancer_pool_type_mapping.iteritems():
+            value = getattr(props, key, None)       
+            if key is 'subnet_id' and value is None:
+                raise NoIdError('')
+            if value is not None:
+                res[mapping] = value    
         props = member.get_loadbalancer_member_properties()
         for key, mapping in self._loadbalancer_member_type_mapping.iteritems():
             value = getattr(props, key, None)
